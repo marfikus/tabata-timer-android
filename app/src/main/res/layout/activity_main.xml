@@ -68,6 +68,24 @@
             android:maxLength="2"
             android:textAlignment="center"/>
 
+
+        <TextView
+            android:id="@+id/start_delay_time_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/start_delay_time_label"
+            android:layout_marginTop="15dp"/>
+
+        <EditText
+            android:id="@+id/start_delay_time_input"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:ems="5"
+            android:text="@string/default_start_delay_time"
+            android:maxLength="2"
+            android:textAlignment="center"/>
+
     </LinearLayout>
 
     <Button

@@ -23,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText workTimeInput;
     private EditText restTimeInput;
     private EditText loopCountInput;
+    private EditText startDelayTimeInput;
     private Button startButton;
     private TextView currentStateView;
     private TextView currentLoopView;
@@ -34,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
     private int workTime;
     private int restTime;
     private int loopCount;
+    private int startDelayTime;
+    private CountDownTimer startDelayTimer;
     private CountDownTimer workTimer;
     private CountDownTimer restTimer;
 
@@ -50,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
         workTimeInput = findViewById(R.id.work_time_input);
         restTimeInput = findViewById(R.id.rest_time_input);
         loopCountInput = findViewById(R.id.loop_count_input);
+        startDelayTimeInput = findViewById(R.id.start_delay_time_input);
         currentStateView = findViewById(R.id.current_state);
         currentLoopView = findViewById(R.id.current_loop);
         currentTimeView = findViewById(R.id.current_time);
@@ -119,6 +123,19 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
 
+        String startDelayTimeString = startDelayTimeInput.getText().toString().trim();
+        if (startDelayTimeString.isEmpty()) {
+            Toast.makeText(this, "Start delay time field is empty!", Toast.LENGTH_SHORT).show();
+            startDelayTimeInput.requestFocus();
+            return false;
+        }
+        startDelayTime = Integer.parseInt(startDelayTimeString);
+        if (startDelayTime < 0) {
+            Toast.makeText(this, "Start delay time field < 0!", Toast.LENGTH_SHORT).show();
+            startDelayTimeInput.requestFocus();
+            return false;
+        }
+
         return true;
     }
 
@@ -126,18 +143,39 @@ public class MainActivity extends AppCompatActivity {
         workTimeInput.setEnabled(false);
         restTimeInput.setEnabled(false);
         loopCountInput.setEnabled(false);
+        startDelayTimeInput.setEnabled(false);
     }
 
     private void unlockFields() {
         workTimeInput.setEnabled(true);
         restTimeInput.setEnabled(true);
         loopCountInput.setEnabled(true);
+        startDelayTimeInput.setEnabled(true);
     }
 
     private void startTimersChain() {
         // сделал класс для доступа к значению currentLoop из обоих таймеров
         // (костыль, но другого решения пока не придумал =))
         CurrentLoop currentLoop = new CurrentLoop(1);
+
+        startDelayTimer = new CountDownTimer(startDelayTime * 1000, 1000) {
+            int visibleStartDelayTime = startDelayTime + 1;
+
+            @Override
+            public void onTick(long l) {
+                visibleStartDelayTime -= 1;
+                currentTimeView.setText(String.valueOf(visibleStartDelayTime));
+            }
+
+            @Override
+            public void onFinish() {
+                currentStateView.setText(R.string.current_state_work);
+                currentTimeView.setText(String.valueOf(workTime));
+                currentLoopView.setText(String.valueOf(currentLoop.getValue()));
+                playSound(soundDing);
+                workTimer.start();
+            }
+        };
 
         workTimer = new CountDownTimer(workTime * 1000, 1000) {
             int visibleWorkTime = workTime + 1;
@@ -186,24 +224,31 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        startButton.setText(R.string.start_button_stop);
-        currentStateView.setText(R.string.current_state_work);
-        currentLoopView.setText(String.valueOf(currentLoop.getValue()));
-        currentTimeView.setText(String.valueOf(workTime));
-        playSound(soundDing);
-        timersChainStarted = true;
-        workTimer.start();
+        if (startDelayTime > 0) {
+            currentStateView.setText(R.string.current_state_start_delay);
+            currentTimeView.setText(String.valueOf(startDelayTime));
+            startDelayTimer.start();
+        } else {
+            currentStateView.setText(R.string.current_state_work);
+            currentLoopView.setText(String.valueOf(currentLoop.getValue()));
+            currentTimeView.setText(String.valueOf(workTime));
+            playSound(soundDing);
+            workTimer.start();
+        }
 
+        startButton.setText(R.string.start_button_stop);
+        timersChainStarted = true;
     }
 
     private void stopTimersChain() {
+        if (startDelayTimer != null) startDelayTimer.cancel();
         if (workTimer != null) workTimer.cancel();
         if (restTimer != null) restTimer.cancel();
         timersChainStarted = false;
         startButton.setText(R.string.start_button_start);
         currentStateView.setText(R.string.current_state_stopped);
-        currentTimeView.setText("0");
-        currentLoopView.setText("0");
+        currentTimeView.setText(R.string.zero);
+        currentLoopView.setText(R.string.zero);
     }
 
     private void loadSettings() {
