@@ -83,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
         appSettings = null;
     }
 
+    // TODO: 10.04.22 сообщения вынести в строки и перевести
     private boolean checkFields() {
         String workTimeString = workTimeInput.getText().toString().trim();
         if (workTimeString.isEmpty()) {
@@ -255,12 +256,14 @@ public class MainActivity extends AppCompatActivity {
         workTimeInput.setText(Integer.toString(appSettings.getWorkTime()));
         restTimeInput.setText(Integer.toString(appSettings.getRestTime()));
         loopCountInput.setText(Integer.toString(appSettings.getLoopCount()));
+        startDelayTimeInput.setText(Integer.toString(appSettings.getStartDelayTime()));
     }
 
     private void saveSettings() {
         appSettings.updateWorkTime(workTime);
         appSettings.updateRestTime(restTime);
         appSettings.updateLoopCount(loopCount);
+        appSettings.updateStartDelayTime(startDelayTime);
     }
 
     private int loadSound(String fileName) {

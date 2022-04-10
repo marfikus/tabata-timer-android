@@ -9,9 +9,11 @@ public class AppSettings {
     private final String WORK_TIME = "WORK_TIME";
     private final String REST_TIME = "REST_TIME";
     private final String LOOP_COUNT = "LOOP_COUNT";
+    private final String START_DELAY_TIME = "START_DELAY_TIME";
     private final int WORK_TIME_DEFAULT = 20;
     private final int REST_TIME_DEFAULT = 10;
     private final int LOOP_COUNT_DEFAULT = 5;
+    private final int START_DELAY_TIME_DEFAULT = 3;
 
     public AppSettings(Context context) {
         settings = context.getSharedPreferences(APP_SETTINGS, Context.MODE_PRIVATE);
@@ -46,6 +48,17 @@ public class AppSettings {
     public void updateLoopCount(int value) {
         SharedPreferences.Editor editor = settings.edit();
         editor.putInt(LOOP_COUNT, value);
+        editor.apply();
+    }
+
+
+    public int getStartDelayTime() {
+        return settings.getInt(START_DELAY_TIME, START_DELAY_TIME_DEFAULT);
+    }
+
+    public void updateStartDelayTime(int value) {
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putInt(START_DELAY_TIME, value);
         editor.apply();
     }
 }

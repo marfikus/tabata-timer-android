@@ -83,7 +83,7 @@
             android:inputType="number"
             android:ems="5"
             android:text="@string/default_start_delay_time"
-            android:maxLength="2"
+            android:maxLength="3"
             android:textAlignment="center"/>
 
     </LinearLayout>
