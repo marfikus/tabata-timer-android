@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Tabata Timer</string>
+    <string name="work_time_label">Время работы(сек.):</string>
+    <string name="rest_time_label">Время отдыха(сек.):</string>
+    <string name="loop_count_label">Количество кругов:</string>
+    <string name="default_work_time">20</string>
+    <string name="default_rest_time">10</string>
+    <string name="default_loop_count">5</string>
+    <string name="start_button_start">Старт</string>
+    <string name="start_button_stop">Стоп</string>
+    <string name="current_loop_label">Текущий круг:</string>
+    <string name="current_time_label">Время:</string>
+    <string name="current_state_label">Состояние:</string>
+    <string name="current_state_stopped">остановлен</string>
+    <string name="current_state_work">работа</string>
+    <string name="current_state_rest">отдых</string>
+    <string name="zero">0</string>
+</resources>
