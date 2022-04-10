@@ -61,9 +61,11 @@ public class MainActivity extends AppCompatActivity {
         startButton.setOnClickListener(view -> {
             if (timersChainStarted) {
                 stopTimersChain();
+                unlockFields();
             } else {
                 if (checkFields()) {
                     saveSettings();
+                    lockFields();
                     startTimersChain();
                 }
             }
@@ -120,6 +122,18 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    private void lockFields() {
+        workTimeInput.setEnabled(false);
+        restTimeInput.setEnabled(false);
+        loopCountInput.setEnabled(false);
+    }
+
+    private void unlockFields() {
+        workTimeInput.setEnabled(true);
+        restTimeInput.setEnabled(true);
+        loopCountInput.setEnabled(true);
+    }
+
     private void startTimersChain() {
         // сделал класс для доступа к значению currentLoop из обоих таймеров
         // (костыль, но другого решения пока не придумал =))
@@ -147,6 +161,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     playSound(soundTada);
                     stopTimersChain();
+                    unlockFields();
                 }
             }
         };
