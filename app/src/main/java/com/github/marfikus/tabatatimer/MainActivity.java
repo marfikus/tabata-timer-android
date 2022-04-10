@@ -7,7 +7,7 @@ import android.content.res.AssetManager;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
-import android.view.View;
+import android.os.CountDownTimer;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -16,53 +16,55 @@ import android.widget.Toast;
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
-    private SoundPool mSoundPool;
-    private AssetManager mAssetManager;
-    private int mDing, mTada;
+    private SoundPool soundPool;
+    private AssetManager assetManager;
+    private int soundDing, soundTada;
 
     private EditText workTimeInput;
     private EditText restTimeInput;
     private EditText loopCountInput;
     private Button startButton;
-    private TextView currentState;
-    private TextView currentLoop;
-    private TextView currentTime;
+    private TextView currentStateView;
+    private TextView currentLoopView;
+    private TextView currentTimeView;
 
-    AppSettings appSettings;
+    private AppSettings appSettings;
 
-    private boolean timerStarted = false;
-    int workTime;
-    int restTime;
-    int loopCount;
+    private boolean timersChainStarted = false;
+    private int workTime;
+    private int restTime;
+    private int loopCount;
+    private CountDownTimer workTimer;
+    private CountDownTimer restTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mSoundPool = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
-        mAssetManager = getAssets();
-        mDing = loadSound("ding.mp3");
-        mTada = loadSound("tada.mp3");
+        soundPool = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
+        assetManager = getAssets();
+        soundDing = loadSound("ding.mp3");
+        soundTada = loadSound("tada.mp3");
 
         workTimeInput = findViewById(R.id.work_time_input);
         restTimeInput = findViewById(R.id.rest_time_input);
         loopCountInput = findViewById(R.id.loop_count_input);
-        currentState = findViewById(R.id.current_state);
-        currentLoop = findViewById(R.id.current_loop);
-        currentTime = findViewById(R.id.current_time);
+        currentStateView = findViewById(R.id.current_state);
+        currentLoopView = findViewById(R.id.current_loop);
+        currentTimeView = findViewById(R.id.current_time);
 
         appSettings = new AppSettings(getApplicationContext());
         loadSettings();
 
         startButton = findViewById(R.id.start_button);
         startButton.setOnClickListener(view -> {
-            if (timerStarted) {
-                stopTimer();
+            if (timersChainStarted) {
+                stopTimersChain();
             } else {
                 if (checkFields()) {
-                    startTimer();
                     saveSettings();
+                    startTimersChain();
                 }
             }
         });
@@ -118,20 +120,75 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    private void startTimer() {
+    private void startTimersChain() {
+        // сделал класс для доступа к значению currentLoop из обоих таймеров
+        // (костыль, но другого решения пока не придумал =))
+        CurrentLoop currentLoop = new CurrentLoop(1);
+
+        workTimer = new CountDownTimer(workTime * 1000, 1000) {
+            int visibleWorkTime = workTime + 1;
+
+            @Override
+            public void onTick(long l) {
+                visibleWorkTime -= 1;
+                currentTimeView.setText(String.valueOf(visibleWorkTime));
+            }
+
+            @Override
+            public void onFinish() {
+                if (currentLoop.getValue() < loopCount) {
+                    currentLoop.incValue();
+                    visibleWorkTime = workTime + 1;
+                    currentStateView.setText(R.string.current_state_rest);
+                    currentTimeView.setText(String.valueOf(restTime));
+                    playSound(soundDing);
+                    restTimer.start();
+
+                } else {
+                    playSound(soundTada);
+                    stopTimersChain();
+                }
+            }
+        };
+
+        restTimer = new CountDownTimer(restTime * 1000, 1000) {
+            int visibleRestTime = restTime + 1;
+
+            @Override
+            public void onTick(long l) {
+                visibleRestTime -= 1;
+                currentTimeView.setText(String.valueOf(visibleRestTime));
+            }
+
+            @Override
+            public void onFinish() {
+                visibleRestTime = restTime + 1;
+                currentStateView.setText(R.string.current_state_work);
+                currentTimeView.setText(String.valueOf(workTime));
+                currentLoopView.setText(String.valueOf(currentLoop.getValue()));
+                playSound(soundDing);
+                workTimer.start();
+            }
+        };
+
         startButton.setText(R.string.start_button_stop);
-        currentState.setText(R.string.current_state_work);
+        currentStateView.setText(R.string.current_state_work);
+        currentLoopView.setText(String.valueOf(currentLoop.getValue()));
+        currentTimeView.setText(String.valueOf(workTime));
+        playSound(soundDing);
+        timersChainStarted = true;
+        workTimer.start();
 
-
-
-        playSound(mDing);
-        timerStarted = true;
     }
 
-    private void stopTimer() {
+    private void stopTimersChain() {
+        if (workTimer != null) workTimer.cancel();
+        if (restTimer != null) restTimer.cancel();
+        timersChainStarted = false;
         startButton.setText(R.string.start_button_start);
-        currentState.setText(R.string.current_state_stopped);
-        timerStarted = false;
+        currentStateView.setText(R.string.current_state_stopped);
+        currentTimeView.setText("0");
+        currentLoopView.setText("0");
     }
 
     private void loadSettings() {
@@ -149,17 +206,17 @@ public class MainActivity extends AppCompatActivity {
     private int loadSound(String fileName) {
         AssetFileDescriptor afd = null;
         try {
-            afd = mAssetManager.openFd(fileName);
+            afd = assetManager.openFd(fileName);
         } catch (IOException e) {
             e.printStackTrace();
             Toast.makeText(this, "Couldn't load file '" + fileName + "'", Toast.LENGTH_SHORT).show();
             return -1;
         }
-        return mSoundPool.load(afd, 1);
+        return soundPool.load(afd, 1);
     }
 
     private void playSound(int sound) {
         if (sound > 0)
-            mSoundPool.play(sound, 1, 1, 1, 0, 1);
+            soundPool.play(sound, 1, 1, 1, 0, 1);
     }
 }
