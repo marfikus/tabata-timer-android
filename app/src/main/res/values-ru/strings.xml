@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">Tabata Timer</string>
+
+    <string name="work_time_label">Время работы (с):</string>
+    <string name="rest_time_label">Время отдыха (с):</string>
+    <string name="loop_count_label">Количество кругов:</string>
+    <string name="start_delay_time_label">Задержка старта (с):</string>
+    <string name="default_work_time">20</string>
+    <string name="default_rest_time">10</string>
+    <string name="default_loop_count">5</string>
+    <string name="default_start_delay_time">3</string>
+    <string name="start_button_start">Старт</string>
+    <string name="start_button_stop">Стоп</string>
+    <string name="current_loop_label">Текущий круг:</string>
+    <string name="current_time_label">Время:</string>
+    <string name="current_state_label">Состояние:</string>
+    <string name="current_state_stopped">остановлен</string>
+    <string name="current_state_start_delay">задержка старта</string>
+    <string name="current_state_work">работа</string>
+    <string name="current_state_rest">отдых</string>
+    <string name="zero">0</string>
+    <string name="work_time_empty">Поле \'Время работы\' не должно быть пустым!</string>
+    <string name="work_time_less_0">Время работы должно быть больше 0!</string>
+    <string name="rest_time_empty">Поле \'Время отдыха\' не должно быть пустым!</string>
+    <string name="rest_time_less_0">Время отдыха должно быть больше 0!</string>
+    <string name="loop_count_empty">Поле \'Количество кругов\' не должно быть пустым!</string>
+    <string name="loop_count_less_0">Количество кругов должно быть больше 0!</string>
+    <string name="start_delay_time_empty">Поле \'Задержка старта\' не должно быть пустым!</string>
+    <string name="start_delay_time_less_0">Время задержки старта не должно быть меньше 0!</string>
+</resources>

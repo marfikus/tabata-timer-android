@@ -83,56 +83,55 @@ public class MainActivity extends AppCompatActivity {
         appSettings = null;
     }
 
-    // TODO: 10.04.22 сообщения вынести в строки и перевести
     private boolean checkFields() {
         String workTimeString = workTimeInput.getText().toString().trim();
         if (workTimeString.isEmpty()) {
-            Toast.makeText(this, "Work time field is empty!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.work_time_empty), Toast.LENGTH_SHORT).show();
             workTimeInput.requestFocus();
             return false;
         }
         workTime = Integer.parseInt(workTimeString);
         if (workTime <= 0) {
-            Toast.makeText(this, "Work time field <= 0!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.work_time_less_0), Toast.LENGTH_SHORT).show();
             workTimeInput.requestFocus();
             return false;
         }
 
         String restTimeString = restTimeInput.getText().toString().trim();
         if (restTimeString.isEmpty()) {
-            Toast.makeText(this, "Rest time field is empty!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.rest_time_empty), Toast.LENGTH_SHORT).show();
             restTimeInput.requestFocus();
             return false;
         }
         restTime = Integer.parseInt(restTimeString);
         if (restTime <= 0) {
-            Toast.makeText(this, "Rest time field <= 0!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.rest_time_less_0), Toast.LENGTH_SHORT).show();
             restTimeInput.requestFocus();
             return false;
         }
 
         String loopCountString = loopCountInput.getText().toString().trim();
         if (loopCountString.isEmpty()) {
-            Toast.makeText(this, "Loop count field is empty!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.loop_count_empty), Toast.LENGTH_SHORT).show();
             loopCountInput.requestFocus();
             return false;
         }
         loopCount = Integer.parseInt(loopCountString);
         if (loopCount <= 0) {
-            Toast.makeText(this, "Loop count field <= 0!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.loop_count_less_0), Toast.LENGTH_SHORT).show();
             loopCountInput.requestFocus();
             return false;
         }
 
         String startDelayTimeString = startDelayTimeInput.getText().toString().trim();
         if (startDelayTimeString.isEmpty()) {
-            Toast.makeText(this, "Start delay time field is empty!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.start_delay_time_empty), Toast.LENGTH_SHORT).show();
             startDelayTimeInput.requestFocus();
             return false;
         }
         startDelayTime = Integer.parseInt(startDelayTimeString);
         if (startDelayTime < 0) {
-            Toast.makeText(this, "Start delay time field < 0!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.start_delay_time_less_0), Toast.LENGTH_SHORT).show();
             startDelayTimeInput.requestFocus();
             return false;
         }
