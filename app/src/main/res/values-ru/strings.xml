@@ -27,4 +27,5 @@
     <string name="loop_count_less_0">Количество кругов должно быть больше 0!</string>
     <string name="start_delay_time_empty">Поле \'Задержка старта\' не должно быть пустым!</string>
     <string name="start_delay_time_less_0">Время задержки старта не должно быть меньше 0!</string>
+    <string name="open_file_error">Не удалось загрузить файл \'</string>
 </resources>

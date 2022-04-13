@@ -27,4 +27,5 @@
     <string name="loop_count_less_0">The loop count must be greater than 0!</string>
     <string name="start_delay_time_empty">The \'Start delay time\' field should not be empty!</string>
     <string name="start_delay_time_less_0">The start delay time should not be less than 0!</string>
+    <string name="open_file_error">Couldn\'t load file \'</string>
 </resources>
