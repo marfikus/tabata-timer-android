@@ -2,14 +2,13 @@ package com.github.marfikus.tabatatimer;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.os.PowerManager;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -32,7 +31,6 @@ public class MainActivity extends AppCompatActivity {
     private TextView currentTimeView;
 
     private AppSettings appSettings;
-    private PowerManager.WakeLock wakeLock;
 
     private boolean timersChainStarted = false;
     private int workTime;
@@ -63,10 +61,6 @@ public class MainActivity extends AppCompatActivity {
 
         appSettings = new AppSettings(getApplicationContext());
         loadSettings();
-
-        // необходимо для того, чтобы при выключении экрана приложение продолжало работать
-        PowerManager mgr = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        wakeLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyApp::MyWakelockTag");
 
         startButton = findViewById(R.id.start_button);
         startButton.setOnClickListener(view -> {
@@ -232,9 +226,9 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-//        wakeLock.acquire(10*60*1000L /*10 minutes*/);
-        // таймаут = общее время работы + еще минута сверху (на всякий случай)
-        wakeLock.acquire(((workTime + restTime) * loopCount + startDelayTime + 60) * 1000L);
+        // TODO: 17.04.22 просто wakelock не помогает (надо через workManager делать..)
+        //  Вместо него пока просто не гасим экран во время работы.
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         if (startDelayTime > 0) {
             currentStateView.setText(R.string.current_state_start_delay);
@@ -257,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
         if (workTimer != null) workTimer.cancel();
         if (restTimer != null) restTimer.cancel();
         timersChainStarted = false;
-        wakeLock.release();
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         startButton.setText(R.string.start_button_start);
         currentStateView.setText(R.string.current_state_stopped);
         currentTimeView.setText(R.string.zero);
