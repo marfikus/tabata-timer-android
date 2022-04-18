@@ -1,6 +1,9 @@
 package com.github.marfikus.tabatatimer;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
@@ -8,7 +11,6 @@ import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -31,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView currentTimeView;
 
     private AppSettings appSettings;
+
+    private OneTimeWorkRequest workRequest;
 
     private boolean timersChainStarted = false;
     private int workTime;
@@ -226,9 +230,15 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        // TODO: 17.04.22 просто wakelock не помогает (надо через workManager делать..)
-        //  Вместо него пока просто не гасим экран во время работы.
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        // общее время работы + еще минута сверху (на всякий случай)
+        long totalTime = (workTime + restTime) * loopCount + startDelayTime + 60;
+        Data data = new Data.Builder()
+                .putLong("TOTAL_TIME", totalTime)
+                .build();
+        workRequest = new OneTimeWorkRequest.Builder(MyWorker.class)
+                .setInputData(data)
+                .build();
+        WorkManager.getInstance(getApplicationContext()).enqueue(workRequest);
 
         if (startDelayTime > 0) {
             currentStateView.setText(R.string.current_state_start_delay);
@@ -251,7 +261,9 @@ public class MainActivity extends AppCompatActivity {
         if (workTimer != null) workTimer.cancel();
         if (restTimer != null) restTimer.cancel();
         timersChainStarted = false;
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        WorkManager.getInstance(getApplicationContext()).cancelWorkById(workRequest.getId());
+
         startButton.setText(R.string.start_button_start);
         currentStateView.setText(R.string.current_state_stopped);
         currentTimeView.setText(R.string.zero);
