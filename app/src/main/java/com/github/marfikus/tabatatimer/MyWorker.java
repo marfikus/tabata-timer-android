@@ -1,6 +1,7 @@
 package com.github.marfikus.tabatatimer;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Worker;
@@ -17,7 +18,9 @@ public class MyWorker extends Worker {
     @Override
     public Result doWork() {
         try {
-            TimeUnit.SECONDS.sleep(60 * 5);
+            long totalTime = getInputData().getLong("TOTAL_TIME", 60 * 5);
+//            Log.d("Worker", "totalTime: " + totalTime);
+            TimeUnit.SECONDS.sleep(totalTime);
         } catch (InterruptedException e) {
             e.printStackTrace();
             return Result.failure();
