@@ -56,11 +56,11 @@ public class MainViewModel extends ViewModel {
     public void startButtonClicked() {
         if (timersChainStarted) {
             stopTimersChain();
-            unlockFields();
+            if (callbackAttached()) mainActivityCallback.unlockInputFields();
         } else {
             if (checkFields()) {
                 saveSettings();
-                lockFields();
+                if (callbackAttached()) mainActivityCallback.lockInputFields();
                 startTimersChain();
             }
         }

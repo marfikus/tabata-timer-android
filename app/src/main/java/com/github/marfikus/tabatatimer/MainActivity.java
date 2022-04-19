@@ -1,22 +1,10 @@
 package com.github.marfikus.tabatatimer;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.work.Data;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkManager;
-
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
-import android.media.AudioManager;
-import android.media.SoundPool;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity implements MainActivityCallback {
     private MainViewModel mainViewModel;
@@ -70,25 +58,27 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
         mainViewModel.detachCallback();
     }
 
-    private void lockFields() {
-        workTimeInput.setEnabled(false);
-        restTimeInput.setEnabled(false);
-        loopCountInput.setEnabled(false);
-        startDelayTimeInput.setEnabled(false);
-    }
-
-    private void unlockFields() {
-        workTimeInput.setEnabled(true);
-        restTimeInput.setEnabled(true);
-        loopCountInput.setEnabled(true);
-        startDelayTimeInput.setEnabled(true);
-    }
-
     @Override
     public void updateInputFields(String workTime, String restTime, String loopCount, String startDelayTime) {
         workTimeInput.setText(workTime);
         restTimeInput.setText(restTime);
         loopCountInput.setText(loopCount);
         startDelayTimeInput.setText(startDelayTime);
+    }
+
+    @Override
+    public void lockInputFields() {
+        workTimeInput.setEnabled(false);
+        restTimeInput.setEnabled(false);
+        loopCountInput.setEnabled(false);
+        startDelayTimeInput.setEnabled(false);
+    }
+
+    @Override
+    public void unlockInputFields() {
+        workTimeInput.setEnabled(true);
+        restTimeInput.setEnabled(true);
+        loopCountInput.setEnabled(true);
+        startDelayTimeInput.setEnabled(true);
     }
 }

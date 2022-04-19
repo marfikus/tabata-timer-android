@@ -9,5 +9,7 @@ public interface MainActivityCallback {
             String startDelayTime
     );
 
+    void lockInputFields();
 
+    void unlockInputFields();
 }
