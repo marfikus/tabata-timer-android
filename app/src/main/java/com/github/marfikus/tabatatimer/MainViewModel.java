@@ -15,6 +15,7 @@ import androidx.work.WorkManager;
 import java.io.IOException;
 
 public class MainViewModel extends ViewModel {
+    private MainActivityCallback mainActivityCallback = null;
 
     private SoundPool soundPool;
     private AssetManager assetManager;
@@ -33,9 +34,8 @@ public class MainViewModel extends ViewModel {
     private CountDownTimer workTimer;
     private CountDownTimer restTimer;
 
-
-    public MainViewModel() {
-
+    public MainViewModel(AppSettings settings) {
+        appSettings = settings;
     }
 
     public void init() {
@@ -43,9 +43,14 @@ public class MainViewModel extends ViewModel {
         assetManager = getAssets();
         soundDing = loadSound("ding.mp3");
         soundTada = loadSound("tada.mp3");
+    }
 
-        appSettings = new AppSettings(getApplicationContext());
-        loadSettings();
+    public void attachCallback(MainActivityCallback callback) {
+        mainActivityCallback = callback;
+    }
+
+    public void detachCallback() {
+        mainActivityCallback = null;
     }
 
     public void startButtonClicked() {
@@ -228,11 +233,13 @@ public class MainViewModel extends ViewModel {
         currentLoopView.setText(R.string.zero);
     }
 
-    private void loadSettings() {
-        workTimeInput.setText(Integer.toString(appSettings.getWorkTime()));
-        restTimeInput.setText(Integer.toString(appSettings.getRestTime()));
-        loopCountInput.setText(Integer.toString(appSettings.getLoopCount()));
-        startDelayTimeInput.setText(Integer.toString(appSettings.getStartDelayTime()));
+    public void loadSettings() {
+        if (callbackAttached()) mainActivityCallback.updateInputFields(
+                Integer.toString(appSettings.getWorkTime()),
+                Integer.toString(appSettings.getRestTime()),
+                Integer.toString(appSettings.getLoopCount()),
+                Integer.toString(appSettings.getStartDelayTime())
+        );
     }
 
     private void saveSettings() {
@@ -240,6 +247,10 @@ public class MainViewModel extends ViewModel {
         appSettings.updateRestTime(restTime);
         appSettings.updateLoopCount(loopCount);
         appSettings.updateStartDelayTime(startDelayTime);
+    }
+
+    public boolean callbackAttached() {
+        return mainActivityCallback != null;
     }
 
     private int loadSound(String fileName) {

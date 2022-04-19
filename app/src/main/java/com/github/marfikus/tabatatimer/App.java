@@ -9,6 +9,8 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
 
-        mainViewModel = new MainViewModel();
+        mainViewModel = new MainViewModel(
+                new AppSettings(getApplicationContext())
+        );
     }
 }

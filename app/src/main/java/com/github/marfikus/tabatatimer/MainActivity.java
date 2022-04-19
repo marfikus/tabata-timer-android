@@ -18,7 +18,7 @@ import android.widget.Toast;
 
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MainActivityCallback {
     private MainViewModel mainViewModel;
 
     private EditText workTimeInput;
@@ -45,11 +45,29 @@ public class MainActivity extends AppCompatActivity {
         currentLoopView = findViewById(R.id.current_loop);
         currentTimeView = findViewById(R.id.current_time);
 
+        mainViewModel.attachCallback(this);
+        // TODO: 19.04.22 добавить проверку бандла: либо из него грузить значения, либо сохраненные настройки
+        mainViewModel.loadSettings();
+
         startButton = findViewById(R.id.start_button);
         startButton.setOnClickListener(view -> {
             mainViewModel.startButtonClicked();
         });
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (!mainViewModel.callbackAttached()) mainViewModel.attachCallback(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        mainViewModel.detachCallback();
     }
 
     private void lockFields() {
@@ -64,5 +82,13 @@ public class MainActivity extends AppCompatActivity {
         restTimeInput.setEnabled(true);
         loopCountInput.setEnabled(true);
         startDelayTimeInput.setEnabled(true);
+    }
+
+    @Override
+    public void updateInputFields(String workTime, String restTime, String loopCount, String startDelayTime) {
+        workTimeInput.setText(workTime);
+        restTimeInput.setText(restTime);
+        loopCountInput.setText(loopCount);
+        startDelayTimeInput.setText(startDelayTime);
     }
 }
