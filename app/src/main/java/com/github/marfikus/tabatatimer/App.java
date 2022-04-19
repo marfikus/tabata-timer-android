@@ -10,7 +10,8 @@ public class App extends Application {
         super.onCreate();
 
         mainViewModel = new MainViewModel(
-                new AppSettings(getApplicationContext())
+                new AppSettings(getApplicationContext()),
+                new SoundPlayer(getAssets())
         );
     }
 }

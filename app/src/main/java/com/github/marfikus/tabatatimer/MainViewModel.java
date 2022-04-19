@@ -18,11 +18,8 @@ import java.io.IOException;
 public class MainViewModel extends ViewModel {
     private MainActivityCallback mainActivityCallback = null;
 
-    private SoundPool soundPool;
-    private AssetManager assetManager;
-    private int soundDing, soundTada;
-
-    private AppSettings appSettings;
+    private final AppSettings appSettings;
+    private final SoundPlayer soundPlayer;
 
     private OneTimeWorkRequest workRequest;
 
@@ -36,15 +33,13 @@ public class MainViewModel extends ViewModel {
     private CountDownTimer restTimer;
 
 
-    public MainViewModel(AppSettings settings) {
+    public MainViewModel(AppSettings settings, SoundPlayer player) {
         appSettings = settings;
+        soundPlayer = player;
     }
 
     public void init() {
-        soundPool = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
-        assetManager = getAssets();
-        soundDing = loadSound("ding.mp3");
-        soundTada = loadSound("tada.mp3");
+
     }
 
     public void attachCallback(MainActivityCallback callback) {
@@ -155,7 +150,7 @@ public class MainViewModel extends ViewModel {
                 currentStateView.setText(R.string.current_state_work);
                 currentTimeView.setText(String.valueOf(workTime));
                 currentLoopView.setText(String.valueOf(currentLoop.getValue()));
-                playSound(soundDing);
+                soundPlayer.playDing();
                 workTimer.start();
             }
         };
@@ -176,11 +171,11 @@ public class MainViewModel extends ViewModel {
                     visibleWorkTime = workTime + 1;
                     currentStateView.setText(R.string.current_state_rest);
                     currentTimeView.setText(String.valueOf(restTime));
-                    playSound(soundDing);
+                    soundPlayer.playDing();
                     restTimer.start();
 
                 } else {
-                    playSound(soundTada);
+                    soundPlayer.playTada();
                     stopTimersChain();
                     unlockFields();
                 }
@@ -202,7 +197,7 @@ public class MainViewModel extends ViewModel {
                 currentStateView.setText(R.string.current_state_work);
                 currentTimeView.setText(String.valueOf(workTime));
                 currentLoopView.setText(String.valueOf(currentLoop.getValue()));
-                playSound(soundDing);
+                soundPlayer.playDing();
                 workTimer.start();
             }
         };
@@ -225,7 +220,7 @@ public class MainViewModel extends ViewModel {
             currentStateView.setText(R.string.current_state_work);
             currentLoopView.setText(String.valueOf(currentLoop.getValue()));
             currentTimeView.setText(String.valueOf(workTime));
-            playSound(soundDing);
+            soundPlayer.playDing();
             workTimer.start();
         }
 
@@ -262,23 +257,5 @@ public class MainViewModel extends ViewModel {
         appSettings.updateRestTime(restTime);
         appSettings.updateLoopCount(loopCount);
         appSettings.updateStartDelayTime(startDelayTime);
-    }
-
-
-    private int loadSound(String fileName) {
-        AssetFileDescriptor afd = null;
-        try {
-            afd = assetManager.openFd(fileName);
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(this, getString(R.string.open_file_error) + fileName + "'", Toast.LENGTH_SHORT).show();
-            return -1;
-        }
-        return soundPool.load(afd, 1);
-    }
-
-    private void playSound(int sound) {
-        if (sound > 0)
-            soundPool.play(sound, 1, 1, 1, 0, 1);
     }
 }
