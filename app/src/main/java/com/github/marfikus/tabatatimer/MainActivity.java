@@ -19,6 +19,8 @@ import android.widget.Toast;
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
+    private MainViewModel mainViewModel;
+
     private SoundPool soundPool;
     private AssetManager assetManager;
     private int soundDing, soundTada;
@@ -49,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mainViewModel = ((App) getApplication()).mainViewModel;
 
         soundPool = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
         assetManager = getAssets();
