@@ -5,6 +5,7 @@ import android.content.res.AssetManager;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.CountDownTimer;
+import android.text.Editable;
 import android.widget.Toast;
 
 import androidx.lifecycle.ViewModel;
@@ -34,6 +35,7 @@ public class MainViewModel extends ViewModel {
     private CountDownTimer workTimer;
     private CountDownTimer restTimer;
 
+
     public MainViewModel(AppSettings settings) {
         appSettings = settings;
     }
@@ -53,12 +55,27 @@ public class MainViewModel extends ViewModel {
         mainActivityCallback = null;
     }
 
-    public void startButtonClicked() {
+    public boolean callbackAttached() {
+        return mainActivityCallback != null;
+    }
+
+
+    public void startButtonClicked(
+            Editable workTimeValue,
+            Editable restTimeValue,
+            Editable loopCountValue,
+            Editable startDelayTimeValue
+    ) {
         if (timersChainStarted) {
             stopTimersChain();
             if (callbackAttached()) mainActivityCallback.unlockInputFields();
         } else {
-            if (checkFields()) {
+            if (checkInputFieldsValues(
+                    workTimeValue,
+                    restTimeValue,
+                    loopCountValue,
+                    startDelayTimeValue
+            )) {
                 saveSettings();
                 if (callbackAttached()) mainActivityCallback.lockInputFields();
                 startTimersChain();
@@ -66,56 +83,53 @@ public class MainViewModel extends ViewModel {
         }
     }
 
-    private boolean checkFields() {
-        String workTimeString = workTimeInput.getText().toString().trim();
+    private boolean checkInputFieldsValues(
+            Editable workTimeValue,
+            Editable restTimeValue,
+            Editable loopCountValue,
+            Editable startDelayTimeValue
+    ) {
+        String workTimeString = workTimeValue.toString().trim();
         if (workTimeString.isEmpty()) {
-            Toast.makeText(this, getString(R.string.work_time_empty), Toast.LENGTH_SHORT).show();
-            workTimeInput.requestFocus();
+            if (callbackAttached()) mainActivityCallback.showWorkTimeInputError(R.string.work_time_empty);
             return false;
         }
         workTime = Integer.parseInt(workTimeString);
         if (workTime <= 0) {
-            Toast.makeText(this, getString(R.string.work_time_less_0), Toast.LENGTH_SHORT).show();
-            workTimeInput.requestFocus();
+            if (callbackAttached()) mainActivityCallback.showWorkTimeInputError(R.string.work_time_less_0);
             return false;
         }
 
-        String restTimeString = restTimeInput.getText().toString().trim();
+        String restTimeString = restTimeValue.toString().trim();
         if (restTimeString.isEmpty()) {
-            Toast.makeText(this, getString(R.string.rest_time_empty), Toast.LENGTH_SHORT).show();
-            restTimeInput.requestFocus();
+            if (callbackAttached()) mainActivityCallback.showRestTimeInputError(R.string.rest_time_empty);
             return false;
         }
         restTime = Integer.parseInt(restTimeString);
         if (restTime <= 0) {
-            Toast.makeText(this, getString(R.string.rest_time_less_0), Toast.LENGTH_SHORT).show();
-            restTimeInput.requestFocus();
+            if (callbackAttached()) mainActivityCallback.showRestTimeInputError(R.string.rest_time_less_0);
             return false;
         }
 
-        String loopCountString = loopCountInput.getText().toString().trim();
+        String loopCountString = loopCountValue.toString().trim();
         if (loopCountString.isEmpty()) {
-            Toast.makeText(this, getString(R.string.loop_count_empty), Toast.LENGTH_SHORT).show();
-            loopCountInput.requestFocus();
+            if (callbackAttached()) mainActivityCallback.showLoopCountInputError(R.string.loop_count_empty);
             return false;
         }
         loopCount = Integer.parseInt(loopCountString);
         if (loopCount <= 0) {
-            Toast.makeText(this, getString(R.string.loop_count_less_0), Toast.LENGTH_SHORT).show();
-            loopCountInput.requestFocus();
+            if (callbackAttached()) mainActivityCallback.showLoopCountInputError(R.string.loop_count_less_0);
             return false;
         }
 
-        String startDelayTimeString = startDelayTimeInput.getText().toString().trim();
+        String startDelayTimeString = startDelayTimeValue.toString().trim();
         if (startDelayTimeString.isEmpty()) {
-            Toast.makeText(this, getString(R.string.start_delay_time_empty), Toast.LENGTH_SHORT).show();
-            startDelayTimeInput.requestFocus();
+            if (callbackAttached()) mainActivityCallback.showStartDelayTimeInputError(R.string.start_delay_time_empty);
             return false;
         }
         startDelayTime = Integer.parseInt(startDelayTimeString);
         if (startDelayTime < 0) {
-            Toast.makeText(this, getString(R.string.start_delay_time_less_0), Toast.LENGTH_SHORT).show();
-            startDelayTimeInput.requestFocus();
+            if (callbackAttached()) mainActivityCallback.showStartDelayTimeInputError(R.string.start_delay_time_less_0);
             return false;
         }
 
@@ -233,6 +247,7 @@ public class MainViewModel extends ViewModel {
         currentLoopView.setText(R.string.zero);
     }
 
+
     public void loadSettings() {
         if (callbackAttached()) mainActivityCallback.updateInputFields(
                 Integer.toString(appSettings.getWorkTime()),
@@ -249,9 +264,6 @@ public class MainViewModel extends ViewModel {
         appSettings.updateStartDelayTime(startDelayTime);
     }
 
-    public boolean callbackAttached() {
-        return mainActivityCallback != null;
-    }
 
     private int loadSound(String fileName) {
         AssetFileDescriptor afd = null;

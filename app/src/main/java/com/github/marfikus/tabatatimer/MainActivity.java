@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements MainActivityCallback {
     private MainViewModel mainViewModel;
@@ -39,7 +40,12 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
 
         startButton = findViewById(R.id.start_button);
         startButton.setOnClickListener(view -> {
-            mainViewModel.startButtonClicked();
+            mainViewModel.startButtonClicked(
+                    workTimeInput.getText(),
+                    restTimeInput.getText(),
+                    loopCountInput.getText(),
+                    startDelayTimeInput.getText()
+            );
         });
 
     }
@@ -80,5 +86,29 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
         restTimeInput.setEnabled(true);
         loopCountInput.setEnabled(true);
         startDelayTimeInput.setEnabled(true);
+    }
+
+    @Override
+    public void showWorkTimeInputError(int message) {
+        Toast.makeText(this, getString(message), Toast.LENGTH_SHORT).show();
+        workTimeInput.requestFocus();
+    }
+
+    @Override
+    public void showRestTimeInputError(int message) {
+        Toast.makeText(this, getString(message), Toast.LENGTH_SHORT).show();
+        restTimeInput.requestFocus();
+    }
+
+    @Override
+    public void showLoopCountInputError(int message) {
+        Toast.makeText(this, getString(message), Toast.LENGTH_SHORT).show();
+        loopCountInput.requestFocus();
+    }
+
+    @Override
+    public void showStartDelayTimeInputError(int message) {
+        Toast.makeText(this, getString(message), Toast.LENGTH_SHORT).show();
+        startDelayTimeInput.requestFocus();
     }
 }

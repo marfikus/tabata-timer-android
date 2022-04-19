@@ -1,5 +1,7 @@
 package com.github.marfikus.tabatatimer;
 
+import androidx.annotation.StringRes;
+
 public interface MainActivityCallback {
 
     void updateInputFields(
@@ -12,4 +14,12 @@ public interface MainActivityCallback {
     void lockInputFields();
 
     void unlockInputFields();
+
+    void showWorkTimeInputError(@StringRes int message);
+
+    void showRestTimeInputError(@StringRes int message);
+
+    void showLoopCountInputError(@StringRes int message);
+
+    void showStartDelayTimeInputError(@StringRes int message);
 }
