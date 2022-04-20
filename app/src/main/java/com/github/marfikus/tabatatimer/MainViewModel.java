@@ -1,19 +1,13 @@
 package com.github.marfikus.tabatatimer;
 
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
-import android.media.AudioManager;
-import android.media.SoundPool;
+import android.content.Context;
 import android.os.CountDownTimer;
 import android.text.Editable;
-import android.widget.Toast;
 
 import androidx.lifecycle.ViewModel;
 import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
-
-import java.io.IOException;
 
 public class MainViewModel extends ViewModel {
     private MainActivityCallback mainActivityCallback = null;
@@ -33,13 +27,9 @@ public class MainViewModel extends ViewModel {
     private CountDownTimer restTimer;
 
 
-    public MainViewModel(AppSettings settings, SoundPlayer player) {
+    public MainViewModel(AppSettings settings, SoundPlayer player, Context context) {
         appSettings = settings;
         soundPlayer = player;
-    }
-
-    public void init() {
-
     }
 
     public void attachCallback(MainActivityCallback callback) {
@@ -142,14 +132,16 @@ public class MainViewModel extends ViewModel {
             @Override
             public void onTick(long l) {
                 visibleStartDelayTime -= 1;
-                currentTimeView.setText(String.valueOf(visibleStartDelayTime));
+                if (callbackAttached()) mainActivityCallback.updateCurrentTimeView(visibleStartDelayTime);
             }
 
             @Override
             public void onFinish() {
-                currentStateView.setText(R.string.current_state_work);
-                currentTimeView.setText(String.valueOf(workTime));
-                currentLoopView.setText(String.valueOf(currentLoop.getValue()));
+                if (callbackAttached()) {
+                    mainActivityCallback.updateCurrentStateView(R.string.current_state_work);
+                    mainActivityCallback.updateCurrentTimeView(workTime);
+                    mainActivityCallback.updateCurrentLoopView(currentLoop.getValue());
+                }
                 soundPlayer.playDing();
                 workTimer.start();
             }
@@ -161,7 +153,7 @@ public class MainViewModel extends ViewModel {
             @Override
             public void onTick(long l) {
                 visibleWorkTime -= 1;
-                currentTimeView.setText(String.valueOf(visibleWorkTime));
+                if (callbackAttached()) mainActivityCallback.updateCurrentTimeView(visibleWorkTime);
             }
 
             @Override
@@ -169,15 +161,17 @@ public class MainViewModel extends ViewModel {
                 if (currentLoop.getValue() < loopCount) {
                     currentLoop.incValue();
                     visibleWorkTime = workTime + 1;
-                    currentStateView.setText(R.string.current_state_rest);
-                    currentTimeView.setText(String.valueOf(restTime));
+                    if (callbackAttached()) {
+                        mainActivityCallback.updateCurrentStateView(R.string.current_state_rest);
+                        mainActivityCallback.updateCurrentTimeView(restTime);
+                    }
                     soundPlayer.playDing();
                     restTimer.start();
 
                 } else {
                     soundPlayer.playTada();
                     stopTimersChain();
-                    unlockFields();
+                    if (callbackAttached()) mainActivityCallback.unlockInputFields();
                 }
             }
         };
@@ -188,15 +182,17 @@ public class MainViewModel extends ViewModel {
             @Override
             public void onTick(long l) {
                 visibleRestTime -= 1;
-                currentTimeView.setText(String.valueOf(visibleRestTime));
+                if (callbackAttached()) mainActivityCallback.updateCurrentTimeView(visibleRestTime);
             }
 
             @Override
             public void onFinish() {
                 visibleRestTime = restTime + 1;
-                currentStateView.setText(R.string.current_state_work);
-                currentTimeView.setText(String.valueOf(workTime));
-                currentLoopView.setText(String.valueOf(currentLoop.getValue()));
+                if (callbackAttached()) {
+                    mainActivityCallback.updateCurrentStateView(R.string.current_state_work);
+                    mainActivityCallback.updateCurrentTimeView(workTime);
+                    mainActivityCallback.updateCurrentLoopView(currentLoop.getValue());
+                }
                 soundPlayer.playDing();
                 workTimer.start();
             }
@@ -213,18 +209,22 @@ public class MainViewModel extends ViewModel {
         WorkManager.getInstance(getApplicationContext()).enqueue(workRequest);
 
         if (startDelayTime > 0) {
-            currentStateView.setText(R.string.current_state_start_delay);
-            currentTimeView.setText(String.valueOf(startDelayTime));
+            if (callbackAttached()) {
+                mainActivityCallback.updateCurrentStateView(R.string.current_state_start_delay);
+                mainActivityCallback.updateCurrentTimeView(startDelayTime);
+            }
             startDelayTimer.start();
         } else {
-            currentStateView.setText(R.string.current_state_work);
-            currentLoopView.setText(String.valueOf(currentLoop.getValue()));
-            currentTimeView.setText(String.valueOf(workTime));
+            if (callbackAttached()) {
+                mainActivityCallback.updateCurrentStateView(R.string.current_state_work);
+                mainActivityCallback.updateCurrentLoopView(currentLoop.getValue());
+                mainActivityCallback.updateCurrentTimeView(workTime);
+            }
             soundPlayer.playDing();
             workTimer.start();
         }
 
-        startButton.setText(R.string.start_button_stop);
+        if (callbackAttached()) mainActivityCallback.updateStartButtonCaption(R.string.start_button_stop);
         timersChainStarted = true;
     }
 
@@ -236,10 +236,12 @@ public class MainViewModel extends ViewModel {
 
         WorkManager.getInstance(getApplicationContext()).cancelWorkById(workRequest.getId());
 
-        startButton.setText(R.string.start_button_start);
-        currentStateView.setText(R.string.current_state_stopped);
-        currentTimeView.setText(R.string.zero);
-        currentLoopView.setText(R.string.zero);
+        if (callbackAttached()) {
+            mainActivityCallback.updateStartButtonCaption(R.string.start_button_start);
+            mainActivityCallback.updateCurrentStateView(R.string.current_state_stopped);
+            mainActivityCallback.updateCurrentTimeView(0);
+            mainActivityCallback.updateCurrentLoopView(0);
+        }
     }
 
 

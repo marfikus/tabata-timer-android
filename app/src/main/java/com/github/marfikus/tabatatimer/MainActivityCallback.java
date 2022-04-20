@@ -22,4 +22,12 @@ public interface MainActivityCallback {
     void showLoopCountInputError(@StringRes int message);
 
     void showStartDelayTimeInputError(@StringRes int message);
+
+    void updateCurrentTimeView(int value);
+
+    void updateCurrentStateView(@StringRes int value);
+
+    void updateCurrentLoopView(int value);
+
+    void updateStartButtonCaption(@StringRes int value);
 }

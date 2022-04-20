@@ -11,7 +11,8 @@ public class App extends Application {
 
         mainViewModel = new MainViewModel(
                 new AppSettings(getApplicationContext()),
-                new SoundPlayer(getAssets())
+                new SoundPlayer(getAssets()),
+                getApplicationContext()
         );
     }
 }

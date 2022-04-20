@@ -1,5 +1,6 @@
 package com.github.marfikus.tabatatimer;
 
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Button;
@@ -64,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
         mainViewModel.detachCallback();
     }
 
+
     @Override
     public void updateInputFields(String workTime, String restTime, String loopCount, String startDelayTime) {
         workTimeInput.setText(workTime);
@@ -89,26 +91,46 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
     }
 
     @Override
-    public void showWorkTimeInputError(int message) {
+    public void showWorkTimeInputError(@StringRes int message) {
         Toast.makeText(this, getString(message), Toast.LENGTH_SHORT).show();
         workTimeInput.requestFocus();
     }
 
     @Override
-    public void showRestTimeInputError(int message) {
+    public void showRestTimeInputError(@StringRes int message) {
         Toast.makeText(this, getString(message), Toast.LENGTH_SHORT).show();
         restTimeInput.requestFocus();
     }
 
     @Override
-    public void showLoopCountInputError(int message) {
+    public void showLoopCountInputError(@StringRes int message) {
         Toast.makeText(this, getString(message), Toast.LENGTH_SHORT).show();
         loopCountInput.requestFocus();
     }
 
     @Override
-    public void showStartDelayTimeInputError(int message) {
+    public void showStartDelayTimeInputError(@StringRes int message) {
         Toast.makeText(this, getString(message), Toast.LENGTH_SHORT).show();
         startDelayTimeInput.requestFocus();
+    }
+
+    @Override
+    public void updateCurrentTimeView(int value) {
+        currentTimeView.setText(String.valueOf(value));
+    }
+
+    @Override
+    public void updateCurrentStateView(@StringRes int value) {
+        currentStateView.setText(getString(value));
+    }
+
+    @Override
+    public void updateCurrentLoopView(int value) {
+        currentLoopView.setText(String.valueOf(value));
+    }
+
+    @Override
+    public void updateStartButtonCaption(@StringRes int value) {
+        startButton.setText(getString(value));
     }
 }
