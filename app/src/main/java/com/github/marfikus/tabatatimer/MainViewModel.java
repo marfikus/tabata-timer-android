@@ -199,14 +199,6 @@ public class MainViewModel extends ViewModel {
         long totalTime = (workTime + restTime) * loopCount + startDelayTime + 60;
         myWakeLock.start(totalTime);
 
-/*        Data data = new Data.Builder()
-                .putLong("TOTAL_TIME", totalTime)
-                .build();
-        workRequest = new OneTimeWorkRequest.Builder(MyWorker.class)
-                .setInputData(data)
-                .build();
-        WorkManager.getInstance(getApplicationContext()).enqueue(workRequest);*/
-
         if (startDelayTime > 0) {
             if (callbackAttached()) {
                 mainActivityCallback.updateCurrentStateView(R.string.current_state_start_delay);
@@ -232,8 +224,6 @@ public class MainViewModel extends ViewModel {
         if (workTimer != null) workTimer.cancel();
         if (restTimer != null) restTimer.cancel();
         timersChainStarted = false;
-
-//        WorkManager.getInstance(getApplicationContext()).cancelWorkById(workRequest.getId());
         myWakeLock.stop();
 
         if (callbackAttached()) {

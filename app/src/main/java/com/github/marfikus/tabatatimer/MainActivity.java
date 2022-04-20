@@ -41,14 +41,12 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
         mainViewModel.loadSettings();
 
         startButton = findViewById(R.id.start_button);
-        startButton.setOnClickListener(view -> {
-            mainViewModel.startButtonClicked(
-                    workTimeInput.getText(),
-                    restTimeInput.getText(),
-                    loopCountInput.getText(),
-                    startDelayTimeInput.getText()
-            );
-        });
+        startButton.setOnClickListener(view -> mainViewModel.startButtonClicked(
+                workTimeInput.getText(),
+                restTimeInput.getText(),
+                loopCountInput.getText(),
+                startDelayTimeInput.getText()
+        ));
 
     }
 
