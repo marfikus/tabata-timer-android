@@ -3,6 +3,7 @@ package com.github.marfikus.tabatatimer;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+
 public class AppSettings {
     private SharedPreferences settings;
     private final String APP_SETTINGS = "TABATA_TIMER_SETTINGS";

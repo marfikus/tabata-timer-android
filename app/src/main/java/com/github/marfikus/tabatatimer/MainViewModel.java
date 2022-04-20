@@ -1,21 +1,17 @@
 package com.github.marfikus.tabatatimer;
 
-import android.content.Context;
 import android.os.CountDownTimer;
 import android.text.Editable;
 
 import androidx.lifecycle.ViewModel;
-import androidx.work.Data;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkManager;
+
 
 public class MainViewModel extends ViewModel {
     private MainActivityCallback mainActivityCallback = null;
 
     private final AppSettings appSettings;
     private final SoundPlayer soundPlayer;
-
-    private OneTimeWorkRequest workRequest;
+    private final MyWakeLock myWakeLock;
 
     private boolean timersChainStarted = false;
     private int workTime;
@@ -27,9 +23,10 @@ public class MainViewModel extends ViewModel {
     private CountDownTimer restTimer;
 
 
-    public MainViewModel(AppSettings settings, SoundPlayer player, Context context) {
+    public MainViewModel(AppSettings settings, SoundPlayer player, MyWakeLock wakeLock) {
         appSettings = settings;
         soundPlayer = player;
+        myWakeLock = wakeLock;
     }
 
     public void attachCallback(MainActivityCallback callback) {
@@ -200,13 +197,15 @@ public class MainViewModel extends ViewModel {
 
         // общее время работы + еще минута сверху (на всякий случай)
         long totalTime = (workTime + restTime) * loopCount + startDelayTime + 60;
-        Data data = new Data.Builder()
+        myWakeLock.start(totalTime);
+
+/*        Data data = new Data.Builder()
                 .putLong("TOTAL_TIME", totalTime)
                 .build();
         workRequest = new OneTimeWorkRequest.Builder(MyWorker.class)
                 .setInputData(data)
                 .build();
-        WorkManager.getInstance(getApplicationContext()).enqueue(workRequest);
+        WorkManager.getInstance(getApplicationContext()).enqueue(workRequest);*/
 
         if (startDelayTime > 0) {
             if (callbackAttached()) {
@@ -234,7 +233,8 @@ public class MainViewModel extends ViewModel {
         if (restTimer != null) restTimer.cancel();
         timersChainStarted = false;
 
-        WorkManager.getInstance(getApplicationContext()).cancelWorkById(workRequest.getId());
+//        WorkManager.getInstance(getApplicationContext()).cancelWorkById(workRequest.getId());
+        myWakeLock.stop();
 
         if (callbackAttached()) {
             mainActivityCallback.updateStartButtonCaption(R.string.start_button_start);

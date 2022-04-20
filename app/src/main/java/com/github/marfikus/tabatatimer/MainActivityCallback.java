@@ -2,6 +2,7 @@ package com.github.marfikus.tabatatimer;
 
 import androidx.annotation.StringRes;
 
+
 public interface MainActivityCallback {
 
     void updateInputFields(

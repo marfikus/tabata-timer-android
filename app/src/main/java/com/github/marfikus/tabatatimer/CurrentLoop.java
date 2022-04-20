@@ -1,5 +1,6 @@
 package com.github.marfikus.tabatatimer;
 
+
 public class CurrentLoop {
     private int loop;
 

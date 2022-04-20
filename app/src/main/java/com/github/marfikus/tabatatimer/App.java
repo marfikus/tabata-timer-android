@@ -2,6 +2,7 @@ package com.github.marfikus.tabatatimer;
 
 import android.app.Application;
 
+
 public class App extends Application {
     public MainViewModel mainViewModel;
 
@@ -12,7 +13,7 @@ public class App extends Application {
         mainViewModel = new MainViewModel(
                 new AppSettings(getApplicationContext()),
                 new SoundPlayer(getAssets()),
-                getApplicationContext()
+                new MyWakeLock(getApplicationContext())
         );
     }
 }
