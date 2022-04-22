@@ -12,6 +12,7 @@ public class MainViewModel extends ViewModel {
     private final AppSettings appSettings;
     private final SoundPlayer soundPlayer;
     private final MyWakeLock myWakeLock;
+    private final CurrentValues currentValues;
 
     private boolean timersChainStarted = false;
     private int workTime;
@@ -23,10 +24,11 @@ public class MainViewModel extends ViewModel {
     private CountDownTimer restTimer;
 
 
-    public MainViewModel(AppSettings settings, SoundPlayer player, MyWakeLock wakeLock) {
-        appSettings = settings;
-        soundPlayer = player;
-        myWakeLock = wakeLock;
+    public MainViewModel(AppSettings appSettings, SoundPlayer soundPlayer, MyWakeLock myWakeLock, CurrentValues currentValues) {
+        this.appSettings = appSettings;
+        this.soundPlayer = soundPlayer;
+        this.myWakeLock = myWakeLock;
+        this.currentValues = currentValues;
     }
 
     public void attachCallback(MainActivityCallback callback) {
@@ -50,7 +52,6 @@ public class MainViewModel extends ViewModel {
     ) {
         if (timersChainStarted) {
             stopTimersChain();
-            if (callbackAttached()) mainActivityCallback.unlockInputFields();
         } else {
             if (checkInputFieldsValues(
                     workTimeValue,
@@ -59,7 +60,6 @@ public class MainViewModel extends ViewModel {
                     startDelayTimeValue
             )) {
                 saveSettings();
-                if (callbackAttached()) mainActivityCallback.lockInputFields();
                 startTimersChain();
             }
         }
@@ -119,9 +119,6 @@ public class MainViewModel extends ViewModel {
     }
 
     private void startTimersChain() {
-        // сделал класс для доступа к значению currentLoop из обоих таймеров
-        // (костыль, но другого решения пока не придумал =))
-        CurrentLoop currentLoop = new CurrentLoop(1);
 
         startDelayTimer = new CountDownTimer(startDelayTime * 1000, 1000) {
             int visibleStartDelayTime = startDelayTime + 1;
@@ -129,15 +126,19 @@ public class MainViewModel extends ViewModel {
             @Override
             public void onTick(long l) {
                 visibleStartDelayTime -= 1;
-                if (callbackAttached()) mainActivityCallback.updateCurrentTimeView(visibleStartDelayTime);
+                currentValues.setTime(visibleStartDelayTime);
+                if (callbackAttached()) mainActivityCallback.updateCurrentTimeView(currentValues.getTime());
             }
 
             @Override
             public void onFinish() {
+                currentValues.setState(R.string.current_state_work);
+                currentValues.setLoop(1);
+                currentValues.setTime(workTime);
                 if (callbackAttached()) {
-                    mainActivityCallback.updateCurrentStateView(R.string.current_state_work);
-                    mainActivityCallback.updateCurrentTimeView(workTime);
-                    mainActivityCallback.updateCurrentLoopView(currentLoop.getValue());
+                    mainActivityCallback.updateCurrentStateView(currentValues.getState());
+                    mainActivityCallback.updateCurrentTimeView(currentValues.getTime());
+                    mainActivityCallback.updateCurrentLoopView(currentValues.getLoop());
                 }
                 soundPlayer.playDing();
                 workTimer.start();
@@ -150,17 +151,19 @@ public class MainViewModel extends ViewModel {
             @Override
             public void onTick(long l) {
                 visibleWorkTime -= 1;
-                if (callbackAttached()) mainActivityCallback.updateCurrentTimeView(visibleWorkTime);
+                currentValues.setTime(visibleWorkTime);
+                if (callbackAttached()) mainActivityCallback.updateCurrentTimeView(currentValues.getTime());
             }
 
             @Override
             public void onFinish() {
-                if (currentLoop.getValue() < loopCount) {
-                    currentLoop.incValue();
+                if (currentValues.getLoop() < loopCount) {
                     visibleWorkTime = workTime + 1;
+                    currentValues.setState(R.string.current_state_rest);
+                    currentValues.setTime(restTime);
                     if (callbackAttached()) {
-                        mainActivityCallback.updateCurrentStateView(R.string.current_state_rest);
-                        mainActivityCallback.updateCurrentTimeView(restTime);
+                        mainActivityCallback.updateCurrentStateView(currentValues.getState());
+                        mainActivityCallback.updateCurrentTimeView(currentValues.getTime());
                     }
                     soundPlayer.playDing();
                     restTimer.start();
@@ -168,6 +171,7 @@ public class MainViewModel extends ViewModel {
                 } else {
                     soundPlayer.playTada();
                     stopTimersChain();
+                    currentValues.setInputsEnabled(true);
                     if (callbackAttached()) mainActivityCallback.unlockInputFields();
                 }
             }
@@ -179,44 +183,47 @@ public class MainViewModel extends ViewModel {
             @Override
             public void onTick(long l) {
                 visibleRestTime -= 1;
-                if (callbackAttached()) mainActivityCallback.updateCurrentTimeView(visibleRestTime);
+                currentValues.setTime(visibleRestTime);
+                if (callbackAttached()) mainActivityCallback.updateCurrentTimeView(currentValues.getTime());
             }
 
             @Override
             public void onFinish() {
                 visibleRestTime = restTime + 1;
+                currentValues.incLoop();
+                currentValues.setState(R.string.current_state_work);
+                currentValues.setTime(workTime);
                 if (callbackAttached()) {
-                    mainActivityCallback.updateCurrentStateView(R.string.current_state_work);
-                    mainActivityCallback.updateCurrentTimeView(workTime);
-                    mainActivityCallback.updateCurrentLoopView(currentLoop.getValue());
+                    mainActivityCallback.updateCurrentStateView(currentValues.getState());
+                    mainActivityCallback.updateCurrentTimeView(currentValues.getTime());
+                    mainActivityCallback.updateCurrentLoopView(currentValues.getLoop());
                 }
                 soundPlayer.playDing();
                 workTimer.start();
             }
         };
 
+
         // общее время работы + еще минута сверху (на всякий случай)
         long totalTime = (workTime + restTime) * loopCount + startDelayTime + 60;
         myWakeLock.start(totalTime);
 
         if (startDelayTime > 0) {
-            if (callbackAttached()) {
-                mainActivityCallback.updateCurrentStateView(R.string.current_state_start_delay);
-                mainActivityCallback.updateCurrentTimeView(startDelayTime);
-            }
+            currentValues.setState(R.string.current_state_start_delay);
+            currentValues.setTime(startDelayTime);
             startDelayTimer.start();
         } else {
-            if (callbackAttached()) {
-                mainActivityCallback.updateCurrentStateView(R.string.current_state_work);
-                mainActivityCallback.updateCurrentLoopView(currentLoop.getValue());
-                mainActivityCallback.updateCurrentTimeView(workTime);
-            }
+            currentValues.setState(R.string.current_state_work);
+            currentValues.setLoop(1);
+            currentValues.setTime(workTime);
             soundPlayer.playDing();
             workTimer.start();
         }
 
-        if (callbackAttached()) mainActivityCallback.updateStartButtonCaption(R.string.start_button_stop);
+        currentValues.setStartButtonCaption(R.string.start_button_stop);
+        currentValues.setInputsEnabled(false);
         timersChainStarted = true;
+        updateViews();
     }
 
     private void stopTimersChain() {
@@ -226,12 +233,12 @@ public class MainViewModel extends ViewModel {
         timersChainStarted = false;
         myWakeLock.stop();
 
-        if (callbackAttached()) {
-            mainActivityCallback.updateStartButtonCaption(R.string.start_button_start);
-            mainActivityCallback.updateCurrentStateView(R.string.current_state_stopped);
-            mainActivityCallback.updateCurrentTimeView(0);
-            mainActivityCallback.updateCurrentLoopView(0);
-        }
+        currentValues.setStartButtonCaption(R.string.start_button_start);
+        currentValues.setState(R.string.current_state_stopped);
+        currentValues.setTime(0);
+        currentValues.setLoop(0);
+        currentValues.setInputsEnabled(true);
+        updateViews();
     }
 
 
@@ -249,5 +256,20 @@ public class MainViewModel extends ViewModel {
         appSettings.updateRestTime(restTime);
         appSettings.updateLoopCount(loopCount);
         appSettings.updateStartDelayTime(startDelayTime);
+    }
+
+    public void updateViews() {
+        if (callbackAttached()) {
+            mainActivityCallback.updateStartButtonCaption(currentValues.getStartButtonCaption());
+            mainActivityCallback.updateCurrentStateView(currentValues.getState());
+            mainActivityCallback.updateCurrentTimeView(currentValues.getTime());
+            mainActivityCallback.updateCurrentLoopView(currentValues.getLoop());
+
+            if (currentValues.isInputsEnabled()) {
+                mainActivityCallback.unlockInputFields();
+            } else {
+                mainActivityCallback.lockInputFields();
+            }
+        }
     }
 }

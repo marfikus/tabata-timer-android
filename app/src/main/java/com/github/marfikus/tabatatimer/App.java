@@ -13,7 +13,14 @@ public class App extends Application {
         mainViewModel = new MainViewModel(
                 new AppSettings(getApplicationContext()),
                 new SoundPlayer(getAssets()),
-                new MyWakeLock(getApplicationContext())
+                new MyWakeLock(getApplicationContext()),
+                new CurrentValues(
+                        true,
+                        R.string.start_button_start,
+                        R.string.current_state_stopped,
+                        0,
+                        0
+                )
         );
     }
 }

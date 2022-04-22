@@ -3,6 +3,7 @@ package com.github.marfikus.tabatatimer;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -38,6 +39,8 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
 
         mainViewModel.attachCallback(this);
         // TODO: 19.04.22 добавить проверку бандла: либо из него грузить значения, либо сохраненные настройки
+//        if (savedInstanceState == null) {
+//        }
         mainViewModel.loadSettings();
 
         startButton = findViewById(R.id.start_button);
@@ -55,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
         super.onResume();
 
         if (!mainViewModel.callbackAttached()) mainViewModel.attachCallback(this);
+        mainViewModel.updateViews();
     }
 
     @Override
