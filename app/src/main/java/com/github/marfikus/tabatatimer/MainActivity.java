@@ -4,6 +4,7 @@ import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -132,5 +133,14 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
     @Override
     public void updateStartButtonCaption(@StringRes int value) {
         startButton.setText(getString(value));
+    }
+
+    @Override
+    public void keepScreenOn(boolean value) {
+        if (value) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        } else {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
     }
 }

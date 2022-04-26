@@ -31,4 +31,6 @@ public interface MainActivityCallback {
     void updateCurrentLoopView(int value);
 
     void updateStartButtonCaption(@StringRes int value);
+
+    void keepScreenOn(boolean value);
 }

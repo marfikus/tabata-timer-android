@@ -207,6 +207,9 @@ public class MainViewModel extends ViewModel {
         // общее время работы + еще минута сверху (на всякий случай)
         long totalTime = (workTime + restTime) * loopCount + startDelayTime + 60;
         myWakeLock.start(totalTime);
+        // предотвращаем погасание экрана на время работы таймера
+        // (для старых смартов, ибо там myWakeLock не работает)
+        mainActivityCallback.keepScreenOn(true);
 
         if (startDelayTime > 0) {
             currentValues.setState(R.string.current_state_start_delay);
@@ -232,6 +235,7 @@ public class MainViewModel extends ViewModel {
         if (restTimer != null) restTimer.cancel();
         timersChainStarted = false;
         myWakeLock.stop();
+        mainActivityCallback.keepScreenOn(false);
 
         currentValues.setStartButtonCaption(R.string.start_button_start);
         currentValues.setState(R.string.current_state_stopped);
