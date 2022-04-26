@@ -10,4 +10,4 @@
 [Ссылка для загузки установочного APK-файла](https://github.com/marfikus/tabata-timer-android/releases/download/v.1.0.0/tabata_timer_1.0.0.apk)
 
 Скриншот:  
-![Screenshot_1](/screenshots/Screenshot_1.jpg "Screenshot_1")
+<img src="/screenshots/Screenshot_1.jpg" alt="Screenshot_1" width="250"/>
