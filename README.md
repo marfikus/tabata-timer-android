@@ -7,7 +7,7 @@
 
 Минимальная поддерживаемая версия ОС Android: 4.4 (KitKat)
 
-Скриншот:
-![Screenshot_1](/screenshots/Screenshot_1.jpg "Screenshot_1")
+[Ссылка для загузки установочного APK-файла](https://github.com/marfikus/tabata-timer-android/releases/download/v.1.0.0/tabata_timer_1.0.0.apk)
 
-[Ссылка для загузки APK](https://)
+Скриншот:  
+![Screenshot_1](/screenshots/Screenshot_1.jpg "Screenshot_1")
