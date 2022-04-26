@@ -1,27 +1,17 @@
 package com.github.marfikus.tabatatimer;
 
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.work.Data;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkManager;
-
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
-import android.media.AudioManager;
-import android.media.SoundPool;
 import android.os.Bundle;
-import android.os.CountDownTimer;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity {
-    private SoundPool soundPool;
-    private AssetManager assetManager;
-    private int soundDing, soundTada;
+public class MainActivity extends AppCompatActivity implements MainActivityCallback {
+    private MainViewModel mainViewModel;
 
     private EditText workTimeInput;
     private EditText restTimeInput;
@@ -32,28 +22,12 @@ public class MainActivity extends AppCompatActivity {
     private TextView currentLoopView;
     private TextView currentTimeView;
 
-    private AppSettings appSettings;
-
-    private OneTimeWorkRequest workRequest;
-
-    private boolean timersChainStarted = false;
-    private int workTime;
-    private int restTime;
-    private int loopCount;
-    private int startDelayTime;
-    private CountDownTimer startDelayTimer;
-    private CountDownTimer workTimer;
-    private CountDownTimer restTimer;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        soundPool = new SoundPool(3, AudioManager.STREAM_MUSIC, 0);
-        assetManager = getAssets();
-        soundDing = loadSound("ding.mp3");
-        soundTada = loadSound("tada.mp3");
+        mainViewModel = ((App) getApplication()).mainViewModel;
 
         workTimeInput = findViewById(R.id.work_time_input);
         restTimeInput = findViewById(R.id.rest_time_input);
@@ -63,241 +37,100 @@ public class MainActivity extends AppCompatActivity {
         currentLoopView = findViewById(R.id.current_loop);
         currentTimeView = findViewById(R.id.current_time);
 
-        appSettings = new AppSettings(getApplicationContext());
-        loadSettings();
+        mainViewModel.attachCallback(this);
+        mainViewModel.loadSettings();
 
         startButton = findViewById(R.id.start_button);
-        startButton.setOnClickListener(view -> {
-            if (timersChainStarted) {
-                stopTimersChain();
-                unlockFields();
-            } else {
-                if (checkFields()) {
-                    saveSettings();
-                    lockFields();
-                    startTimersChain();
-                }
-            }
-        });
+        startButton.setOnClickListener(view -> mainViewModel.startButtonClicked(
+                workTimeInput.getText(),
+                restTimeInput.getText(),
+                loopCountInput.getText(),
+                startDelayTimeInput.getText()
+        ));
 
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onResume() {
+        super.onResume();
 
-        appSettings = null;
+        if (!mainViewModel.callbackAttached()) mainViewModel.attachCallback(this);
+        mainViewModel.updateViews();
     }
 
-    private boolean checkFields() {
-        String workTimeString = workTimeInput.getText().toString().trim();
-        if (workTimeString.isEmpty()) {
-            Toast.makeText(this, getString(R.string.work_time_empty), Toast.LENGTH_SHORT).show();
-            workTimeInput.requestFocus();
-            return false;
-        }
-        workTime = Integer.parseInt(workTimeString);
-        if (workTime <= 0) {
-            Toast.makeText(this, getString(R.string.work_time_less_0), Toast.LENGTH_SHORT).show();
-            workTimeInput.requestFocus();
-            return false;
-        }
+    @Override
+    protected void onPause() {
+        super.onPause();
 
-        String restTimeString = restTimeInput.getText().toString().trim();
-        if (restTimeString.isEmpty()) {
-            Toast.makeText(this, getString(R.string.rest_time_empty), Toast.LENGTH_SHORT).show();
-            restTimeInput.requestFocus();
-            return false;
-        }
-        restTime = Integer.parseInt(restTimeString);
-        if (restTime <= 0) {
-            Toast.makeText(this, getString(R.string.rest_time_less_0), Toast.LENGTH_SHORT).show();
-            restTimeInput.requestFocus();
-            return false;
-        }
-
-        String loopCountString = loopCountInput.getText().toString().trim();
-        if (loopCountString.isEmpty()) {
-            Toast.makeText(this, getString(R.string.loop_count_empty), Toast.LENGTH_SHORT).show();
-            loopCountInput.requestFocus();
-            return false;
-        }
-        loopCount = Integer.parseInt(loopCountString);
-        if (loopCount <= 0) {
-            Toast.makeText(this, getString(R.string.loop_count_less_0), Toast.LENGTH_SHORT).show();
-            loopCountInput.requestFocus();
-            return false;
-        }
-
-        String startDelayTimeString = startDelayTimeInput.getText().toString().trim();
-        if (startDelayTimeString.isEmpty()) {
-            Toast.makeText(this, getString(R.string.start_delay_time_empty), Toast.LENGTH_SHORT).show();
-            startDelayTimeInput.requestFocus();
-            return false;
-        }
-        startDelayTime = Integer.parseInt(startDelayTimeString);
-        if (startDelayTime < 0) {
-            Toast.makeText(this, getString(R.string.start_delay_time_less_0), Toast.LENGTH_SHORT).show();
-            startDelayTimeInput.requestFocus();
-            return false;
-        }
-
-        return true;
+        mainViewModel.detachCallback();
     }
 
-    private void lockFields() {
+
+    @Override
+    public void updateInputFields(String workTime, String restTime, String loopCount, String startDelayTime) {
+        workTimeInput.setText(workTime);
+        restTimeInput.setText(restTime);
+        loopCountInput.setText(loopCount);
+        startDelayTimeInput.setText(startDelayTime);
+    }
+
+    @Override
+    public void lockInputFields() {
         workTimeInput.setEnabled(false);
         restTimeInput.setEnabled(false);
         loopCountInput.setEnabled(false);
         startDelayTimeInput.setEnabled(false);
     }
 
-    private void unlockFields() {
+    @Override
+    public void unlockInputFields() {
         workTimeInput.setEnabled(true);
         restTimeInput.setEnabled(true);
         loopCountInput.setEnabled(true);
         startDelayTimeInput.setEnabled(true);
     }
 
-    private void startTimersChain() {
-        // сделал класс для доступа к значению currentLoop из обоих таймеров
-        // (костыль, но другого решения пока не придумал =))
-        CurrentLoop currentLoop = new CurrentLoop(1);
-
-        startDelayTimer = new CountDownTimer(startDelayTime * 1000, 1000) {
-            int visibleStartDelayTime = startDelayTime + 1;
-
-            @Override
-            public void onTick(long l) {
-                visibleStartDelayTime -= 1;
-                currentTimeView.setText(String.valueOf(visibleStartDelayTime));
-            }
-
-            @Override
-            public void onFinish() {
-                currentStateView.setText(R.string.current_state_work);
-                currentTimeView.setText(String.valueOf(workTime));
-                currentLoopView.setText(String.valueOf(currentLoop.getValue()));
-                playSound(soundDing);
-                workTimer.start();
-            }
-        };
-
-        workTimer = new CountDownTimer(workTime * 1000, 1000) {
-            int visibleWorkTime = workTime + 1;
-
-            @Override
-            public void onTick(long l) {
-                visibleWorkTime -= 1;
-                currentTimeView.setText(String.valueOf(visibleWorkTime));
-            }
-
-            @Override
-            public void onFinish() {
-                if (currentLoop.getValue() < loopCount) {
-                    currentLoop.incValue();
-                    visibleWorkTime = workTime + 1;
-                    currentStateView.setText(R.string.current_state_rest);
-                    currentTimeView.setText(String.valueOf(restTime));
-                    playSound(soundDing);
-                    restTimer.start();
-
-                } else {
-                    playSound(soundTada);
-                    stopTimersChain();
-                    unlockFields();
-                }
-            }
-        };
-
-        restTimer = new CountDownTimer(restTime * 1000, 1000) {
-            int visibleRestTime = restTime + 1;
-
-            @Override
-            public void onTick(long l) {
-                visibleRestTime -= 1;
-                currentTimeView.setText(String.valueOf(visibleRestTime));
-            }
-
-            @Override
-            public void onFinish() {
-                visibleRestTime = restTime + 1;
-                currentStateView.setText(R.string.current_state_work);
-                currentTimeView.setText(String.valueOf(workTime));
-                currentLoopView.setText(String.valueOf(currentLoop.getValue()));
-                playSound(soundDing);
-                workTimer.start();
-            }
-        };
-
-        // общее время работы + еще минута сверху (на всякий случай)
-        long totalTime = (workTime + restTime) * loopCount + startDelayTime + 60;
-        Data data = new Data.Builder()
-                .putLong("TOTAL_TIME", totalTime)
-                .build();
-        workRequest = new OneTimeWorkRequest.Builder(MyWorker.class)
-                .setInputData(data)
-                .build();
-        WorkManager.getInstance(getApplicationContext()).enqueue(workRequest);
-
-        if (startDelayTime > 0) {
-            currentStateView.setText(R.string.current_state_start_delay);
-            currentTimeView.setText(String.valueOf(startDelayTime));
-            startDelayTimer.start();
-        } else {
-            currentStateView.setText(R.string.current_state_work);
-            currentLoopView.setText(String.valueOf(currentLoop.getValue()));
-            currentTimeView.setText(String.valueOf(workTime));
-            playSound(soundDing);
-            workTimer.start();
-        }
-
-        startButton.setText(R.string.start_button_stop);
-        timersChainStarted = true;
+    @Override
+    public void showWorkTimeInputError(@StringRes int message) {
+        Toast.makeText(this, getString(message), Toast.LENGTH_SHORT).show();
+        workTimeInput.requestFocus();
     }
 
-    private void stopTimersChain() {
-        if (startDelayTimer != null) startDelayTimer.cancel();
-        if (workTimer != null) workTimer.cancel();
-        if (restTimer != null) restTimer.cancel();
-        timersChainStarted = false;
-
-        WorkManager.getInstance(getApplicationContext()).cancelWorkById(workRequest.getId());
-
-        startButton.setText(R.string.start_button_start);
-        currentStateView.setText(R.string.current_state_stopped);
-        currentTimeView.setText(R.string.zero);
-        currentLoopView.setText(R.string.zero);
+    @Override
+    public void showRestTimeInputError(@StringRes int message) {
+        Toast.makeText(this, getString(message), Toast.LENGTH_SHORT).show();
+        restTimeInput.requestFocus();
     }
 
-    private void loadSettings() {
-        workTimeInput.setText(Integer.toString(appSettings.getWorkTime()));
-        restTimeInput.setText(Integer.toString(appSettings.getRestTime()));
-        loopCountInput.setText(Integer.toString(appSettings.getLoopCount()));
-        startDelayTimeInput.setText(Integer.toString(appSettings.getStartDelayTime()));
+    @Override
+    public void showLoopCountInputError(@StringRes int message) {
+        Toast.makeText(this, getString(message), Toast.LENGTH_SHORT).show();
+        loopCountInput.requestFocus();
     }
 
-    private void saveSettings() {
-        appSettings.updateWorkTime(workTime);
-        appSettings.updateRestTime(restTime);
-        appSettings.updateLoopCount(loopCount);
-        appSettings.updateStartDelayTime(startDelayTime);
+    @Override
+    public void showStartDelayTimeInputError(@StringRes int message) {
+        Toast.makeText(this, getString(message), Toast.LENGTH_SHORT).show();
+        startDelayTimeInput.requestFocus();
     }
 
-    private int loadSound(String fileName) {
-        AssetFileDescriptor afd = null;
-        try {
-            afd = assetManager.openFd(fileName);
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(this, getString(R.string.open_file_error) + fileName + "'", Toast.LENGTH_SHORT).show();
-            return -1;
-        }
-        return soundPool.load(afd, 1);
+    @Override
+    public void updateCurrentTimeView(int value) {
+        currentTimeView.setText(String.valueOf(value));
     }
 
-    private void playSound(int sound) {
-        if (sound > 0)
-            soundPool.play(sound, 1, 1, 1, 0, 1);
+    @Override
+    public void updateCurrentStateView(@StringRes int value) {
+        currentStateView.setText(getString(value));
+    }
+
+    @Override
+    public void updateCurrentLoopView(int value) {
+        currentLoopView.setText(String.valueOf(value));
+    }
+
+    @Override
+    public void updateStartButtonCaption(@StringRes int value) {
+        startButton.setText(getString(value));
     }
 }
