@@ -38,9 +38,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityCallb
         currentTimeView = findViewById(R.id.current_time);
 
         mainViewModel.attachCallback(this);
-        // TODO: 19.04.22 добавить проверку бандла: либо из него грузить значения, либо сохраненные настройки
-//        if (savedInstanceState == null) {
-//        }
         mainViewModel.loadSettings();
 
         startButton = findViewById(R.id.start_button);
