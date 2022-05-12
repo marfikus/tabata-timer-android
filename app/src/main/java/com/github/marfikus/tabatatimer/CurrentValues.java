@@ -8,19 +8,22 @@ public class CurrentValues {
     private int state;
     private int time;
     private int loop;
+    private boolean keepScreenOn;
 
     public CurrentValues(
             boolean inputsEnabled,
             @StringRes int startButtonCaption,
             @StringRes int state,
             int time,
-            int loop
+            int loop,
+            boolean keepScreenOn
     ) {
         this.inputsEnabled = inputsEnabled;
         this.startButtonCaption = startButtonCaption;
         this.state = state;
         this.time = time;
         this.loop = loop;
+        this.keepScreenOn = keepScreenOn;
     }
 
     public boolean isInputsEnabled() {
@@ -65,5 +68,13 @@ public class CurrentValues {
 
     public void incLoop() {
         this.loop += 1;
+    }
+
+    public boolean isKeepScreenOn() {
+        return keepScreenOn;
+    }
+
+    public void setKeepScreenOn(boolean keepScreenOn) {
+        this.keepScreenOn = keepScreenOn;
     }
 }

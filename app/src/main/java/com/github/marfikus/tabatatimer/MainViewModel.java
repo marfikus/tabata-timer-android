@@ -209,7 +209,7 @@ public class MainViewModel extends ViewModel {
         myWakeLock.start(totalTime);
         // предотвращаем погасание экрана на время работы таймера
         // (для старых смартов, ибо там myWakeLock не работает)
-        mainActivityCallback.keepScreenOn(true);
+        currentValues.setKeepScreenOn(true);
 
         if (startDelayTime > 0) {
             currentValues.setState(R.string.current_state_start_delay);
@@ -234,15 +234,16 @@ public class MainViewModel extends ViewModel {
         if (workTimer != null) workTimer.cancel();
         if (restTimer != null) restTimer.cancel();
         timersChainStarted = false;
-        myWakeLock.stop();
-        mainActivityCallback.keepScreenOn(false);
 
         currentValues.setStartButtonCaption(R.string.start_button_start);
         currentValues.setState(R.string.current_state_stopped);
         currentValues.setTime(0);
         currentValues.setLoop(0);
         currentValues.setInputsEnabled(true);
+        currentValues.setKeepScreenOn(false);
         updateViews();
+
+        myWakeLock.stop();
     }
 
 
@@ -274,6 +275,8 @@ public class MainViewModel extends ViewModel {
             } else {
                 mainActivityCallback.lockInputFields();
             }
+
+            mainActivityCallback.keepScreenOn(currentValues.isKeepScreenOn());
         }
     }
 }

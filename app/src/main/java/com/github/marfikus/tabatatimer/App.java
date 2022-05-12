@@ -19,7 +19,8 @@ public class App extends Application {
                         R.string.start_button_start,
                         R.string.current_state_stopped,
                         0,
-                        0
+                        0,
+                        false
                 )
         );
     }
