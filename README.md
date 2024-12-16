@@ -7,7 +7,7 @@
 
 Минимальная поддерживаемая версия ОС Android: 6.0 (Marshmallow)
 
-[Ссылка для загрузки установочного APK-файла](https://github.com/marfikus/tabata-timer-android/releases/download/v.1.0.1/tabata_timer_1.0.1.apk)
+[Ссылка для загрузки установочного APK-файла](https://github.com/marfikus/tabata-timer-android/releases/download/v.1.0.2/tabata_timer_1.0.2.apk)
 
 Скриншот:  
 <img src="/screenshots/Screenshot_1.jpg" alt="Screenshot_1" width="250"/>
